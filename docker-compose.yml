@@ -21,6 +21,10 @@ services:
     volumes:
       - mqtt_data:/mosquitto/data
       - mqtt_log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+    environment:
+      - MOSQUITTO_USERNAME=your_username
+      - MOSQUITTO_PASSWORD=your_password
 
 volumes:
   timescaledb_data:
