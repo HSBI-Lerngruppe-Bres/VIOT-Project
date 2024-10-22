@@ -1,0 +1,6 @@
+CREATE USER esp WITH PASSWORD 'your_password';
+CREATE USER control_server WITH PASSWORD 'your_password';
+CREATE USER web_server WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE smart_mailbox TO esp;
+GRANT ALL PRIVILEGES ON DATABASE smart_mailbox TO control_server;
+GRANT ALL PRIVILEGES ON DATABASE smart_mailbox TO web_server;
