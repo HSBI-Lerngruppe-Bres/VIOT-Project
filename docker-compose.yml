@@ -4,23 +4,24 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg14
     container_name: timescaledb
-    environment:
-      POSTGRES_USER: smart_mailbox
-      POSTGRES_PASSWORD: smart_mailbox
-      POSTGRES_DB: smart_mailbox
+    env_file:
+      - .env
     ports:
-      - "5432:5432"
+    - "5432:5432"
     volumes:
-      - timescaledb_data:/var/lib/postgresql/data
+    - timescaledb_data:/var/lib/postgresql/data
+    - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
 
   mqtt:
     image: eclipse-mosquitto:latest
     container_name: mqtt
     ports:
-      - "1883:1883"
+    - "1883:1883"
     volumes:
-      - mqtt_data:/mosquitto/data
-      - mqtt_log:/mosquitto/log
+    - mqtt_data:/mosquitto/data
+    - mqtt_log:/mosquitto/log
+    env_file:
+      - .env
 
 volumes:
   timescaledb_data:
