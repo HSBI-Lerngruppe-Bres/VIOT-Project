@@ -3,7 +3,7 @@ from models import Base, setup_hypertables
 from sqlalchemy.orm import sessionmaker
 
 class DatabaseConnector:
-    def __init__(self, username, password, host, port, database):
+    def __init__(self, username, password, host, port, database, logger=None):
         """
         Initializes the database connector with the given parameters and sets up the database engine and session.
 
@@ -17,8 +17,10 @@ class DatabaseConnector:
         self.DATABASE_URL = f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}"
         self.engine = create_engine(self.DATABASE_URL)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.logger = logger
         self.Base = Base
         setup_hypertables(self.get_db())
+        self.logger.info("Database tables created successfully.")
         
 
     def get_db(self):
