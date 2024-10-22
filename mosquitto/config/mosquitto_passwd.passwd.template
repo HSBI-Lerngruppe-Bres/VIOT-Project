@@ -1,5 +1,0 @@
-# This is a template for the Mosquitto password file.
-# The format is: username:$7$101$salt$hash
-# Replace {{username}}, {{salt}}, and {{hash}} with actual values.
-
-your_username:$7$101$random_salt$random_hash
