@@ -1,3 +1,4 @@
 # Ignore Mosquitto password files
 mosquitto_passwd
 *.passwd
+init-db.sql
