@@ -2,6 +2,11 @@ import yaml
 
 class Config:
     def __init__(self, config_file):
+        """
+        Initializes the configuration by loading settings from a YAML configuration file.
+        Args:
+            config_file (str): Path to the YAML configuration file.
+        """
         with open(config_file, 'r') as file:
             config = yaml.safe_load(file)
         
