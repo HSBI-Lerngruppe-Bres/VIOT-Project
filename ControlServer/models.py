@@ -37,15 +37,22 @@ class ThresholdSensitivity(Base):
 
 def setup_hypertables(engine):
     """
-    Converts specified tables to hypertables using the provided database connection.
+    Converts specified tables to hypertables using the provided database engine.
 
     Args:
-        connection: A database connection object that allows executing SQL commands.
+        engine: A SQLAlchemy engine object that allows connecting to the database.
+
+    Raises:
+        Exception: If there is an error during the execution of the SQL commands.
 
     The function executes SQL commands to convert the 'weights' and 'alarms' tables
     into hypertables based on the 'timestamp' column.
     """
     with engine.connect() as connection:
-        connection.execute(text("SELECT create_hypertable('weights', 'timestamp');"))
-        connection.execute(text("SELECT create_hypertable('alarms', 'timestamp');"))
-        connection.commit()
+        try:
+            connection.execute(text("SELECT create_hypertable('weights', 'timestamp');"))
+            connection.execute(text("SELECT create_hypertable('alarms', 'timestamp');"))
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+            raise e

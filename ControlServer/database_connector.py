@@ -20,7 +20,11 @@ class DatabaseConnector:
         self.logger = logger
         self.Base = Base
         self.Base.metadata.create_all(bind=self.engine)
-        setup_hypertables(self.engine)
+        
+        try:
+            setup_hypertables(self.engine)
+        except Exception as e:
+            self.logger.error(f"Error creating hypertable: {e}")
         self.logger.info("Database tables created successfully.")
         
 
