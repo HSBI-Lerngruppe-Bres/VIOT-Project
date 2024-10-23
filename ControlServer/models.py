@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -35,7 +35,7 @@ class ThresholdSensitivity(Base):
     sensor_id = Column(Integer, primary_key=True)
     value = Column(Float)
 
-def setup_hypertables(connection):
+def setup_hypertables(engine):
     """
     Converts specified tables to hypertables using the provided database connection.
 
@@ -45,6 +45,7 @@ def setup_hypertables(connection):
     The function executes SQL commands to convert the 'weights' and 'alarms' tables
     into hypertables based on the 'timestamp' column.
     """
-    connection.execute("SELECT create_hypertable('weights', 'timestamp');")
-    connection.execute("SELECT create_hypertable('alarms', 'timestamp');")
-    connection.commit()
+    with engine.connect() as connection:
+        connection.execute(text("SELECT create_hypertable('weights', 'timestamp');"))
+        connection.execute(text("SELECT create_hypertable('alarms', 'timestamp');"))
+        connection.commit()

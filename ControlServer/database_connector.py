@@ -19,28 +19,10 @@ class DatabaseConnector:
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logger
         self.Base = Base
-        setup_hypertables(self.get_db())
+        self.Base.metadata.create_all(bind=self.engine)
+        setup_hypertables(self.engine)
         self.logger.info("Database tables created successfully.")
         
 
-    def get_db(self):
-        """
-        Provides a database session for use within a context.
-
-        This generator function yields a database session object, which can be used
-        to interact with the database. The session is automatically closed once the
-        context is exited.
-
-        Yields:
-            db (Session): A SQLAlchemy session object for database operations.
-        """
-        db = self.SessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-
 # Example usage:
 # db_connector = DatabaseConnector("username", "password", "localhost", 5432, "mydatabase")
-# Base = db_connector.Base
-# get_db = db_connector.get_db
