@@ -2,6 +2,7 @@ from config import Config
 from database_connector import DatabaseConnector
 from mqtt_client import MQTTClient
 import logging
+import time
 
 def main():
     # Load configuration
@@ -33,7 +34,16 @@ def main():
         logger=logger
     )
     
-    logger.info("Done")
+    mqtt_client.subscribe("test_topic")
+        
+    try:
+        mqtt_client.run()
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Server stopped by user.")
+    finally:
+        logger.info("Resources cleaned up and server stopped.")
 
 if __name__ == "__main__":
     main()
