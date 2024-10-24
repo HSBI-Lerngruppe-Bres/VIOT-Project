@@ -46,7 +46,7 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            new_weight = Weight(sensor_id=sensor_id, value=weight)
+            new_weight = Weight(timestamp=datetime.now(), sensor_id=sensor_id, value=weight)
             session.add(new_weight)
             session.commit()
             self.logger.info(f"Added weight: {weight}")
@@ -71,7 +71,7 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            new_alarm = Alarm(sensor_id=sensor_id, value=weight)
+            new_alarm = Alarm(timestamp=datetime.now(), sensor_id=sensor_id, value=weight)
             session.add(new_alarm)
             session.commit()
             self.logger.info(f"Added alarm: {weight}")
