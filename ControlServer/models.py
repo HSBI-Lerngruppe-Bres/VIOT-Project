@@ -19,7 +19,7 @@ class Alarm(Base):
 class UpperThreshold(Base):
     __tablename__ = 'upper_threshold'
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float, default=0.0)
+    value = Column(Float, default=5.0)
 
 class LowerThreshold(Base):
     __tablename__ = 'lower_threshold'
@@ -34,7 +34,7 @@ class EmailNotification(Base):
 class ThresholdSensitivity(Base):
     __tablename__ = 'threshold_sensetivety'
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float, default=10.0)
+    value = Column(Float, default=5.0)
 
 def setup_hypertables(engine):
     """

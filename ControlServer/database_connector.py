@@ -228,8 +228,8 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            new_upper_threshold = UpperThreshold(sensor_id=sensor_id, value=0.0)
-            new_threshold_sensitivity = ThresholdSensitivity(sensor_id=sensor_id, value=10.0)
+            new_upper_threshold = UpperThreshold(sensor_id=sensor_id, value=5)
+            new_threshold_sensitivity = ThresholdSensitivity(sensor_id=sensor_id, value=5)
             session.add(new_upper_threshold)
             session.add(new_threshold_sensitivity)
             session.commit()

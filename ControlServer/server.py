@@ -9,7 +9,7 @@ import json
 logger = logging.getLogger(__name__)
 
 def send_emails(email_server, subject, body, email_addresses):
-    pass
+    logger.info(f"Sending email to {email_addresses} with subject: {subject} and body: {body}")
 
 def on_connect(mqtt_client, userdata, flags, rc):
     """
@@ -63,7 +63,7 @@ def on_message(mqtt_client, userdata, msg):
             if average_weight + upper_threshold > weight:
                 return
             email_adresses = db_connector.get_email_adresses(sensor_id)
-            package_weight = weight - (average_weight + upper_threshold)
+            package_weight = weight - (average_weight)
             send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
             lower_threshold = weight - db_connector.get_threshold_sensitivity(sensor_id)
             mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", json.dumps({"value": lower_threshold}))
@@ -78,9 +78,6 @@ def on_message(mqtt_client, userdata, msg):
     else:
         logger.warning(f"Unknown event type: {event_type}")
         
-    
-    value = json.loads(msg.payload)["value"]
-
 def main():
     config = Config('config.yml')
     
