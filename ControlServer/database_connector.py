@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from models import Base, setup_hypertables, Weight, Alarm, UpperThreshold, EmailNotification, ThresholdSensitivity
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-import datetime
+from datetime import datetime, timedelta
 
 
 class DatabaseConnector:
@@ -46,7 +46,7 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            new_weight = Weight(sensor_id=sensor_id, weight=weight)
+            new_weight = Weight(sensor_id=sensor_id, value=weight)
             session.add(new_weight)
             session.commit()
             self.logger.info(f"Added weight: {weight}")
@@ -71,7 +71,7 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            new_alarm = Alarm(sensor_id=sensor_id, weight=weight)
+            new_alarm = Alarm(sensor_id=sensor_id, value=weight)
             session.add(new_alarm)
             session.commit()
             self.logger.info(f"Added alarm: {weight}")
@@ -98,7 +98,7 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            one_minute_ago = datetime.datetime.timestamp() - datetime.timedelta(minutes=1)
+            one_minute_ago = datetime.now() - timedelta(minutes=1)
             avg_weight = session.query(func.avg(Weight.value)).filter(
                 Weight.sensor_id == sensor_id,
                 Weight.timestamp >= one_minute_ago
@@ -166,13 +166,13 @@ class DatabaseConnector:
         """
         session = self.SessionLocal()
         try:
-            email_addresses = session.query(EmailNotification.email).filter(
+            email_addresses = session.query(EmailNotification.email_address).filter(
             EmailNotification.sensor_id == sensor_id
             ).all()
             email_list = [email[0] for email in email_addresses]
             if not email_list:
                 self.logger.info(f"No email addresses found for sensor_id {sensor_id}.")
-                raise ValueError(f"No email addresses found for sensor_id {sensor_id}.")
+                return []
             return email_list
         except Exception as e:
             session.rollback()
@@ -214,5 +214,30 @@ class DatabaseConnector:
         finally:
             session.close()
 
+    def initialize_sensor(self, sensor_id):
+        """
+        Initializes a sensor by setting default values for the sensor.
+
+        Args:
+            sensor_id (int): The ID of the sensor.
+
+        Exceptions:
+            Rolls back the session if an exception occurs during the commit.
+
+        Closes the session after the operation is complete.
+        """
+        session = self.SessionLocal()
+        try:
+            new_upper_threshold = UpperThreshold(sensor_id=sensor_id, value=0.0)
+            new_threshold_sensitivity = ThresholdSensitivity(sensor_id=sensor_id, value=10.0)
+            session.add(new_upper_threshold)
+            session.add(new_threshold_sensitivity)
+            session.commit()
+            self.logger.info(f"Sensor {sensor_id} initialized.")
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
+        
 # Example usage:
 # db_connector = DatabaseConnector("username", "password", "localhost", 5432, "mydatabase")

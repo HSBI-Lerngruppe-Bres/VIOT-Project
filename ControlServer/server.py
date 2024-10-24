@@ -55,17 +55,21 @@ def on_message(mqtt_client, userdata, msg):
     email_server = userdata['email_server']    
 
     if event_type == "weight":
-        weight = json.loads(msg.payload)["value"]
-        db_connector.add_weight(sensor_id=sensor_id, weight=weight)
-        upper_threshold = db_connector.get_upper_threshold(sensor_id)
-        average_weight = db_connector.get_average_weight(sensor_id)
-        if average_weight + upper_threshold > weight:
-            return
-        email_adresses = db_connector.get_email_adresses(sensor_id)
-        package_weight = weight - (average_weight + upper_threshold)
-        send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
-        lower_threshold = weight - db_connector.get_threshold_sensitivity(sensor_id)
-        mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", json.dumps({"value": lower_threshold}))
+        try:
+            weight = json.loads(msg.payload)["value"]
+            db_connector.add_weight(sensor_id=sensor_id, weight=weight)
+            upper_threshold = db_connector.get_upper_threshold(sensor_id)
+            average_weight = db_connector.get_average_weight(sensor_id)
+            if average_weight + upper_threshold > weight:
+                return
+            email_adresses = db_connector.get_email_adresses(sensor_id)
+            package_weight = weight - (average_weight + upper_threshold)
+            send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
+            lower_threshold = weight - db_connector.get_threshold_sensitivity(sensor_id)
+            mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", json.dumps({"value": lower_threshold}))
+        except Exception as e:
+            db_connector.initialize_sensor(sensor_id)
+            logger.error(f"Error processing weight event: {e} - Sensor initialized.")            
     elif event_type == "alarm":
         alarm = json.loads(msg.payload)["value"]
         db_connector.add_alarm(sensor_id=sensor_id, alarm=alarm)

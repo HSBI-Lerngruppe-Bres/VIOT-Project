@@ -1,29 +1,30 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
 Base = declarative_base()
 
 class Weight(Base):
     __tablename__ = 'weights'
-    timestamp = Column(DateTime, primary_key=True)
+    timestamp = Column(DateTime, primary_key=True, default=datetime.now())
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float)
+    value = Column(Float, default=0.0)
 
 class Alarm(Base):
     __tablename__ = 'alarms'
-    timestamp = Column(DateTime, primary_key=True)
+    timestamp = Column(DateTime, primary_key=True, default=datetime.now())
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float)
+    value = Column(Float, default=0.0)
 
 class UpperThreshold(Base):
     __tablename__ = 'upper_threshold'
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float)
+    value = Column(Float, default=0.0)
 
 class LowerThreshold(Base):
     __tablename__ = 'lower_threshold'
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float)
+    value = Column(Float, default=0.0)
 
 class EmailNotification(Base):
     __tablename__ = 'email_notification'
@@ -33,7 +34,7 @@ class EmailNotification(Base):
 class ThresholdSensitivity(Base):
     __tablename__ = 'threshold_sensetivety'
     sensor_id = Column(Integer, primary_key=True)
-    value = Column(Float)
+    value = Column(Float, default=10.0)
 
 def setup_hypertables(engine):
     """
