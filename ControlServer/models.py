@@ -3,13 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-class Weights(Base):
+class Weight(Base):
     __tablename__ = 'weights'
     timestamp = Column(DateTime, primary_key=True)
     sensor_id = Column(Integer, primary_key=True)
     value = Column(Float)
 
-class Alarms(Base):
+class Alarm(Base):
     __tablename__ = 'alarms'
     timestamp = Column(DateTime, primary_key=True)
     sensor_id = Column(Integer, primary_key=True)
