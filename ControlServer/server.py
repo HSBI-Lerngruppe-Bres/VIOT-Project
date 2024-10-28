@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 def send_emails(email_server, subject, body, email_addresses):
     logger.info(f"Sending email to {email_addresses} with subject: {subject} and body: {body}")
+    for email_address in email_addresses:
+        email_server.send_email(email_address, subject, body)
 
 def on_connect(mqtt_client, userdata, flags, rc):
     """
