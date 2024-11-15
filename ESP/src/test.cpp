@@ -1,13 +1,12 @@
+#include <Arduino.h>
+#include <HX711.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-
-// MQTT-Server Konfiguration
-const char *mqtt_server = "127.0.0.1";   // Adresse des MQTT-Brokers
-const char *mqtt_user = "mqtt_user";     // Benutzername für den MQTT-Broker
-const char *mqtt_password = "mqtt_pass"; // Passwort für den MQTT-Broker
+#include "config.h"
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+HX711 scale;
 
 // Alarm und Gewichtssensor Variablen
 int threshold = 200;          // Beispiel-Schwellenwert für das Gewicht in Gramm
@@ -22,7 +21,7 @@ int readWeightSensor();
 
 void setup()
 {
-    Serial.begin(115200);                // Startet die serielle Kommunikation mit einer Baudrate von 115200
+    Serial.begin(115200);                // Startet die serielle Kommunikation
     setup_wifi();                        // Initialisiert die WLAN-Verbindung
     client.setServer(mqtt_server, 1883); // Setzt den MQTT-Server und Port
     client.setCallback(callback);        // Setzt die Funktion, die bei eingehenden MQTT-Nachrichten aufgerufen wird
@@ -82,10 +81,11 @@ void loop()
 
 int readWeightSensor()
 {
+    float weight = 0;
     // Read weight value from the HX711
     if (scale.is_ready())
     {
-        float weight = scale.get_units(10); // Average 10 readings for stability
+        weight = scale.get_units(10); // Average 10 readings for stability
         Serial.print("Weight: ");
         Serial.print(weight);
         Serial.println(" grams");
