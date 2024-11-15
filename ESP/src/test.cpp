@@ -30,7 +30,7 @@ void setup()
 // Herstellen einer WLAN-Verbindung
 void setup_wifi()
 {
-    WiFi.begin("SSID", "PASSWORD"); // SSID und Passwort des WLANs
+    WiFi.begin(wifi_ssid, wifi_password); // SSID und Passwort des WLANs
     while (WiFi.status() != WL_CONNECTED)
     { // Wartet, bis die WLAN-Verbindung hergestellt ist
         delay(500);
