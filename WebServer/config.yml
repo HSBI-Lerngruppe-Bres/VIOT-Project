@@ -1,0 +1,22 @@
+# Configuration file for WebServer
+
+mqtt:
+  broker: localhost
+  port: 1883
+  client_id: web_server_client
+  topic: mailbox/#
+  qos: 1
+  keep_alive: 60
+  clean_session: true
+  username: mqtt_user
+  password: mqtt_password
+
+database:
+  host: localhost
+  port: 5432
+  name: smart_mailbox
+  user: db_user
+  password: db_password
+
+flask:
+  secret_key: my_super_secret_key

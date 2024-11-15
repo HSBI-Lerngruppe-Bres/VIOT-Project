@@ -2,3 +2,4 @@ flask
 paho-mqtt
 flask_sqlalchemy
 python-dotenv
+pyyaml
