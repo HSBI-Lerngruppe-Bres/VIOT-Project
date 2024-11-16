@@ -48,11 +48,11 @@ void callback(char *topic, byte *message, unsigned int length)
         messageTemp += (char)message[i];
     }
 
-    if (String(topic) == "mailbox/sensor_id/disarm_alarm")
+    if (String(topic) == "mailbox/" + String(sensor_id) + "/disarm_alarm")
     {
         disarmTime = millis(); // Setzt den Zeitpunkt des Deaktivierens auf die aktuelle Zeit
     }
-    else if (String(topic) == "mailbox/sensor_id/arm_alarm")
+    else if (String(topic) == "mailbox/" + String(sensor_id) + "/arm_alarm")
     {
         alarmArmed = true; // Setzt die Alarmstatusvariable auf "scharfgestellt"
     }
@@ -69,13 +69,13 @@ void loop()
     int weight = readWeightSensor(); // Ruft die aktuelle Gewichtsmessung vom Sensor ab
 
     // Gewicht senden
-    client.publish("mailbox/sensor_id/weight", String(weight).c_str());
+    client.publish(("mailbox/" + String(sensor_id) + "/weight").c_str(), String(weight).c_str());
 
     // Alarm Logik
     if (alarmArmed && millis() - disarmTime > 300000 && weight < threshold)
     {
         // Falls der Alarm scharfgestellt ist und die 5-Minuten-Sperrzeit abgelaufen ist und das Gewicht unter dem Schwellenwert liegt, wird der Alarm ausgelöst
-        client.publish("mailbox/sensor_id/alarm", "1"); // Sendet eine Alarmnachricht über MQTT
+        client.publish(("mailbox/" + String(sensor_id) + "/alarm").c_str(), "1"); // Sendet eine Alarmnachricht über MQTT
     }
 }
 
@@ -106,8 +106,8 @@ void reconnect()
     { // Solange der Client nicht verbunden ist, versucht er sich zu verbinden
         if (client.connect("ESP32Client", mqtt_user, mqtt_password))
         {
-            client.subscribe("mailbox/sensor_id/disarm_alarm"); // Abonniert das Topic zum Deaktivieren des Alarms
-            client.subscribe("mailbox/sensor_id/arm_alarm");    // Abonniert das Topic zum Aktivieren des Alarms
+            client.subscribe(("mailbox/" + String(sensor_id) + "/disarm_alarm").c_str()); // Abonniert das Topic zum Deaktivieren des Alarms
+            client.subscribe(("mailbox/" + String(sensor_id) + "/arm_alarm").c_str());    // Abonniert das Topic zum Aktivieren des Alarms
         }
         else
         {
