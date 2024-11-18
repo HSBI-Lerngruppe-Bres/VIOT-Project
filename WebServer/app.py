@@ -10,6 +10,8 @@ config = Config()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = config.SECRET_KEY
+app.config['DEBUG'] = config.DEBUG
 
 # Initialisiere die Datenbank
 init_db(app)

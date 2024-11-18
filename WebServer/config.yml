@@ -1,16 +1,17 @@
 # Configuration file for WebServer
 flask:
   secret_key: my_super_secret_key
+  debug: False
 
 mqtt:
-  broker: localhost
+  broker: mqtt
   port: 1883
   client_id: web_server
   username: your_username
   password: your_password
 
 database:
-  host: localhost
+  host: timescaledb
   port: 5432
   name: smart_mailbox
   user: your_username

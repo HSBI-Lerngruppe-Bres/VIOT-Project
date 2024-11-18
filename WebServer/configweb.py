@@ -9,6 +9,7 @@ class Config:
 
         # Flask-Konfiguration
         self.SECRET_KEY = config['flask']['secret_key']
+        self.DEBUG = config['flask']['debug']
 
         # MQTT-Konfiguration
         self.MQTT_BROKER = config['mqtt']['broker']
