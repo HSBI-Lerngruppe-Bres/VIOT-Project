@@ -2,6 +2,8 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from models import db, init_db, Weights, Alarms
 from configweb import config
+from control_server import control_server_task
+import threading
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI
@@ -24,5 +26,15 @@ def data():
 
     return {'weights': weights_data, 'alarms': alarms_data}
 
-if __name__ == '__main__':
+def control_server_task_context():
+    with app.app_context():
+        control_server_task()
+
+def main():
+    thread = threading.Thread(target=control_server_task_context)
+    thread.start()
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+if __name__ == '__main__':
+    main()

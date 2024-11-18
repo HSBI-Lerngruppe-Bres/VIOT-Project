@@ -1,20 +1,19 @@
-# Configuration file for WebServer
+Configuration file for WebServer
 flask:
   secret_key: my_super_secret_key
 
 mqtt:
   broker: localhost
   port: 1883
-  client_id: web_server
   username: your_username
   password: your_password
 
 database:
-  host: localhost
+  host: db.example.com
   port: 5432
   name: smart_mailbox
-  user: your_username
-  password: your_password
+  user: control_server
+  password: your_database_password
 
 email:
   smtp_server: smtp.example.com
