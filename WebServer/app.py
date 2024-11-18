@@ -1,9 +1,11 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from models import db, init_db, Weights, Alarms
-from configweb import config
+from configweb import Config
 from control_server import control_server_task
 import threading
+
+config = Config()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI

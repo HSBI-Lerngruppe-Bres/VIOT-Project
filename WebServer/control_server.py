@@ -3,6 +3,7 @@ from email_server import EmailServer
 import paho.mqtt.client as mqtt
 from models import db, Weights, UpperThreshold, ThresholdSensitivity, EmailNotification, Alarms
 from sqlalchemy import func
+from psycopg2.errors import UniqueViolation
 from datetime import datetime, timedelta
 import logging
 import json
@@ -216,6 +217,8 @@ def on_connect(mqtt_client, userdata, flags, rc):
     """
     if rc == 0:
         logger.info("Connected successfully")
+        mqtt_client.subscribe("mailbox/+/weight")
+        mqtt_client.subscribe("mailbox/+/alarm")
     else:
         logger.error(f"Connect failed with code {rc}")
 
@@ -248,7 +251,7 @@ def on_message(mqtt_client, userdata, msg):
 
     if event_type == "weight":
         try:
-            weight = json.loads(msg.payload)["value"]
+            weight = json.loads(msg.payload)
             add_weight(sensor_id=sensor_id, weight=weight)
             upper_threshold = get_upper_threshold(sensor_id)
             average_weight = get_average_weight(sensor_id)
@@ -259,14 +262,16 @@ def on_message(mqtt_client, userdata, msg):
             send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
             lower_threshold = weight - get_threshold_sensitivity(sensor_id)
             mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", json.dumps({"value": lower_threshold}))
-        except Exception as e:
+        except UniqueViolation as e:
             initialize_sensor(sensor_id)
             logger.error(f"Error processing weight event: {e} - Sensor initialized.")            
+        except Exception as e:
+            logger.error(f"Error processing weight event: {e}")
     elif event_type == "alarm":
-        alarm = json.loads(msg.payload)["value"]
-        add_alarm(sensor_id=sensor_id, alarm=alarm)
+        weight = json.loads(msg.payload)["value"]
+        add_alarm(sensor_id=sensor_id, weight=weight)
         email_adresses = get_email_adresses(sensor_id)
-        send_emails(email_server, "ALARM", f"Alarm detected with value {alarm}", email_adresses)
+        send_emails(email_server, "ALARM", f"Alarm detected with value {weight}", email_adresses)
     else:
         logger.warning(f"Unknown event type: {event_type}")
         
@@ -275,17 +280,6 @@ def control_server_task():
     
     logging.basicConfig(level=config.LOG_LEVEL.upper(),
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    """file_handler = logging.FileHandler(config.log_file)
-    file_handler.setLevel(config.log_level.upper())
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(config.log_level.upper())
-    console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)"""
     
     logger.info("Configuration loaded successfully.")
     
@@ -304,9 +298,6 @@ def control_server_task():
     mqtt_client.user_data_set({
         'email_server': email_server
     })
-    
-    mqtt_client.subscribe("mailbox/+/weight")
-    mqtt_client.subscribe("mailbox/+/alarm")
     
     try:
         mqtt_client.loop_forever()

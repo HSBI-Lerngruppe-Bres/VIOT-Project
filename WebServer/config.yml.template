@@ -5,6 +5,7 @@ flask:
 mqtt:
   broker: localhost
   port: 1883
+  client_id: web_server
   username: your_username
   password: your_password
 

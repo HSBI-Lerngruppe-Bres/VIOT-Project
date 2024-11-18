@@ -33,7 +33,3 @@ class Config:
         self.LOG_FILE = config['logging'].get('file')
 
         self.DB_URI = f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
-# Beispielverwendung
-config = Config()
-print("Datenbank-URI:", config.DB_URI)
