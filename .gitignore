@@ -2,3 +2,4 @@
 .env
 docker-compose-win.yml
 __pycache__
+poetry.lock

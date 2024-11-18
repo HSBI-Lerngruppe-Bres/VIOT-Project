@@ -10,9 +10,8 @@ mqtt:
   qos: 1
   keep_alive: 60
   clean_session: true
-  username: mqtt_user
-  password: mqtt_password
+  username: your_username
+  password: your_password
 
 database:
-  name: 'data.db'
-
+  name: "data.db"

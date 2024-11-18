@@ -51,5 +51,9 @@ class MQTTClient:
         self.client.loop_forever()
 
 if __name__ == '__main__':
-    mqtt_client = MQTTClient(config.MQTT_BROKER, config.MQTT_PORT)
+    try:
+        mqtt_client = MQTTClient(config.MQTT_BROKER, config.MQTT_PORT, config.MQTT_USERNAME, config.MQTT_PASSWORD)
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        sys.exit(1)
     mqtt_client.run()

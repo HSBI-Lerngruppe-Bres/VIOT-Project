@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Smart Mailbox Dashboard</title>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <style>
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -20,13 +21,6 @@
         <th>Value</th>
         <th>Timestamp</th>
     </tr>
-    {% for entry in weights %}
-    <tr>
-        <td>{{ entry.sensor_id }}</td>
-        <td>{{ entry.value }}</td>
-        <td>{{ entry.timestamp }}</td>
-    </tr>
-    {% endfor %}
 </table>
 
 <h2>Alarme</h2>
@@ -36,30 +30,44 @@
         <th>Value</th>
         <th>Timestamp</th>
     </tr>
-    {% for alarm in alarms %}
-    <tr>
-        <td>{{ alarm.sensor_id }}</td>
-        <td>{{ alarm.value }}</td>
-        <td>{{ alarm.timestamp }}</td>
-    </tr>
-    {% endfor %}
 </table>
+<script>
+    $(document).ready(fetchData);
+    function fetchData() {
+        $.ajax({
+            url: '/data',
+            method: 'GET',
+            success: function(data) {
+                var weightsTable = $('table').first();
+                weightsTable.find("tr:gt(0)").remove(); // Clear existing rows except the header
+                data.weights.forEach(function(entry) {
+                    var row = '<tr>' +
+                        '<td>' + entry.sensor_id + '</td>' +
+                        '<td>' + entry.value + '</td>' +
+                        '<td>' + entry.timestamp + '</td>' +
+                        '</tr>';
+                    weightsTable.append(row);
+                });
 
-
-    <script>
-        const socket = io();
-
-        socket.on('new_weight', function(data) {
-            const table = document.getElementById('weights-table');
-            const row = table.insertRow();
-            row.innerHTML = `<td>${data.sensor_id}</td><td>${data.value}</td><td>${data.timestamp}</td>`;
+                var alarmsTable = $('table').last();
+                alarmsTable.find("tr:gt(0)").remove(); // Clear existing rows except the header
+                data.alarms.forEach(function(alarm) {
+                    var row = '<tr>' +
+                        '<td>' + alarm.sensor_id + '</td>' +
+                        '<td>' + alarm.value + '</td>' +
+                        '<td>' + alarm.timestamp + '</td>' +
+                        '</tr>';
+                    alarmsTable.append(row);
+                });
+            },
+            error: function(error) {
+                console.log('Error fetching data:', error);
+            }
         });
+    }
 
-        socket.on('new_alarm', function(data) {
-            const table = document.getElementById('alarms-table');
-            const row = table.insertRow();
-            row.innerHTML = `<td>${data.sensor_id}</td><td>${data.value}</td><td>${data.timestamp}</td>`;
-        });
-    </script>
+    fetchData(); // Initial fetch
+    setInterval(fetchData, 10000); // Fetch data every minute
+</script>
 </body>
 </html>
