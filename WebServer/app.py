@@ -18,9 +18,49 @@ db.init_app(app)
 with app.app_context():
     init_db(app)
 
+# Route für die Startseite
 @app.route('/')
 def home():
     return "Smart Mailbox Dashboard"
+
+
+# Route zum Einfügen von Gewichtsdaten
+@app.route('/add-weight', methods=['POST'])
+def add_weight():
+    data = request.json
+    new_weight = Weights(
+        timestamp=datetime.utcnow(),
+        sensor_id=data['sensor_id'],
+        value=data['value']
+    )
+    db.session.add(new_weight)
+    db.session.commit()
+    return jsonify({"message": "Weight data added successfully"}), 201
+
+# Route zum Abrufen von Gewichtsdaten
+@app.route('/get-weights', methods=['GET'])
+def get_weights():
+    weights = Weights.query.all()
+    return jsonify([{"timestamp": w.timestamp, "sensor_id": w.sensor_id, "value": w.value} for w in weights])
+
+# Route zum Einfügen von Alarmen
+@app.route('/add-alarm', methods=['POST'])
+def add_alarm():
+    data = request.json
+    new_alarm = Alarms(
+        timestamp=datetime.utcnow(),
+        sensor_id=data['sensor_id'],
+        value=data['value']
+    )
+    db.session.add(new_alarm)
+    db.session.commit()
+    return jsonify({"message": "Alarm added successfully"}), 201
+
+# Route zum Abrufen von Alarmen
+@app.route('/get-alarms', methods=['GET'])
+def get_alarms():
+    alarms = Alarms.query.all()
+    return jsonify([{"timestamp": a.timestamp, "sensor_id": a.sensor_id, "value": a.value} for a in alarms])
 
 if __name__ == '__main__':
     app.run(debug=True)
