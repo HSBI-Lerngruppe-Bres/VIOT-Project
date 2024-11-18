@@ -22,6 +22,11 @@ class Config:
         self.MQTT_PASSWORD = config['mqtt']['password']
 
         # Datenbank-Konfiguration
-        self.DATABASE_URI = config['database']['uri']
+        self.DB_NAME = config['database']['name']
+        self.DB_PATH = os.path.join(os.path.dirname(__file__), 'database', self.DB_NAME)
+        self.DB_URI = f"sqlite:///{self.DB_PATH}"  # Hier wird die URI korrekt erstellt
 
+# Beispielverwendung
 config = Config()
+print("Datenbank-URI:", config.DB_URI)
+

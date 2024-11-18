@@ -14,5 +14,5 @@ mqtt:
   password: mqtt_password
 
 database:
-  uri: sqlite:///C:/Users/elina/Desktop/HSBI/5. Semester/IoT & Vernetzung/Project/VIOT-Project/WebServer/database/data.db
+  name: 'data.db'
 
