@@ -42,12 +42,9 @@ class MQTTClient:
         print(f"Message received: {msg.payload.decode()} on topic: {msg.topic}")
         self.logger.info(f"Received message: {msg.payload.decode()} on topic: {msg.topic}")
 
-        # Verarbeite die Nachricht weiter (z.B. in die Datenbank speichern)
         if msg.topic == "mailbox/sensors":
             try:
                 data = float(msg.payload.decode())
-                
-                # Verwende den Flask-Anwendungskontext
                 with app.app_context():
                     new_weight = Weights(
                         timestamp=datetime.now(timezone.utc),
@@ -59,6 +56,21 @@ class MQTTClient:
                     self.logger.info(f"Weight data saved: {data}")
             except Exception as e:
                 self.logger.error(f"Error saving weight data: {e}")
+
+        elif msg.topic == "mailbox/alarms":
+            try:
+                alarm_value = msg.payload.decode()
+                with app.app_context():
+                    new_alarm = Alarms(
+                        timestamp=datetime.now(timezone.utc),
+                        sensor_id=1,
+                        value=alarm_value
+                    )
+                    db.session.add(new_alarm)
+                    db.session.commit()
+                    self.logger.info(f"Alarm data saved: {alarm_value}")
+            except Exception as e:
+                self.logger.error(f"Error saving alarm data: {e}")
 
 
     def set_on_message(self, on_message):
