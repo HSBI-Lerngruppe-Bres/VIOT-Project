@@ -3,7 +3,6 @@ import os
 
 class Config:
     def __init__(self):
-        # Lade die Konfigurationsdatei
         config_path = os.path.join(os.path.dirname(__file__), 'config.yml')
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
@@ -23,13 +22,6 @@ class Config:
         self.MQTT_PASSWORD = config['mqtt']['password']
 
         # Datenbank-Konfiguration
-        self.DB_HOST = config['database']['host']
-        self.DB_PORT = config['database']['port']
-        self.DB_NAME = config['database']['name']
-        self.DB_USER = config['database']['user']
-        self.DB_PASSWORD = config['database']['password']
+        self.DATABASE_URI = config['database']['uri']
 
-# Beispielverwendung
 config = Config()
-print("MQTT Broker:", config.MQTT_BROKER)
-print("Datenbankname:", config.DB_NAME)

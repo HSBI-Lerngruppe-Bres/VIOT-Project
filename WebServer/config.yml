@@ -1,4 +1,6 @@
 # Configuration file for WebServer
+flask:
+  secret_key: my_super_secret_key
 
 mqtt:
   broker: localhost
@@ -12,11 +14,5 @@ mqtt:
   password: mqtt_password
 
 database:
-  host: localhost
-  port: 5432
-  name: smart_mailbox
-  user: db_user
-  password: db_password
+  uri: sqlite:///C:/Users/elina/Desktop/HSBI/5. Semester/IoT & Vernetzung/Project/VIOT-Project/WebServer/database/data.db
 
-flask:
-  secret_key: my_super_secret_key
