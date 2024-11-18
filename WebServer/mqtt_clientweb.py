@@ -2,6 +2,9 @@ import sys
 import paho.mqtt.client as mqtt
 import logging
 from configweb import Config
+from models import db, Weights, Alarms
+from datetime import datetime, timezone
+from app import app  # Import Flask-App
 
 class MQTTClient:
     def __init__(self, broker, port, username=None, password=None, logger=None):
@@ -13,9 +16,17 @@ class MQTTClient:
         if username and password:
             self.client.username_pw_set(username, password)
 
+        # Setze alle Callback-Funktionen
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
+
+        # Hier explizit den on_message Callback festlegen
         self.client.on_message = self.on_message
+        self.client.on_subscribe = self.on_subscribe
+
+    def on_subscribe(self, client, userdata, mid, granted_qos):
+        print(f"Subscribed successfully with QoS {granted_qos}")
+        self.logger.info(f"Subscribed successfully with QoS {granted_qos}")
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -27,7 +38,28 @@ class MQTTClient:
         self.logger.info("Disconnected with result code " + str(rc))
 
     def on_message(self, client, userdata, msg):
+        print("on_message called")
+        print(f"Message received: {msg.payload.decode()} on topic: {msg.topic}")
         self.logger.info(f"Received message: {msg.payload.decode()} on topic: {msg.topic}")
+
+        # Verarbeite die Nachricht weiter (z.B. in die Datenbank speichern)
+        if msg.topic == "mailbox/sensors":
+            try:
+                data = float(msg.payload.decode())
+                
+                # Verwende den Flask-Anwendungskontext
+                with app.app_context():
+                    new_weight = Weights(
+                        timestamp=datetime.now(timezone.utc),
+                        sensor_id=1,
+                        value=data
+                    )
+                    db.session.add(new_weight)
+                    db.session.commit()
+                    self.logger.info(f"Weight data saved: {data}")
+            except Exception as e:
+                self.logger.error(f"Error saving weight data: {e}")
+
 
     def set_on_message(self, on_message):
         self.client.on_message = on_message
@@ -43,10 +75,18 @@ class MQTTClient:
     def run(self):
         try:
             self.client.connect(self.broker, self.port, 60)
-            self.client.loop_start()
+            
+            # Abonniere die Themen
+            self.subscribe("mailbox/sensors")
+            self.subscribe("mailbox/alarms")
+
+            # Starte die Endlosschleife
+            self.client.loop_forever()
         except Exception as e:
             self.logger.error(f"Failed to connect to MQTT broker: {e}")
             sys.exit(1)
+
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -59,6 +99,6 @@ if __name__ == "__main__":
         password=config.MQTT_PASSWORD
     )
 
-    mqtt_client.subscribe(config.MQTT_TOPIC)
-    mqtt_client.send(config.MQTT_TOPIC, "Test message from WebServer")
+    mqtt_client.subscribe("mailbox/sensors")
+    mqtt_client.subscribe("mailbox/alarms")
     mqtt_client.run()
