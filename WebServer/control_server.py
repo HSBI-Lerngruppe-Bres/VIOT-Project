@@ -248,11 +248,10 @@ def on_message(mqtt_client, userdata, msg):
 
     if event_type == "weight":
         try:
-            with app.app_context():
-                weight = json.loads(msg.payload)["value"]
-                add_weight(sensor_id=sensor_id, weight=weight)
-                upper_threshold = get_upper_threshold(sensor_id)
-                average_weight = get_average_weight(sensor_id)
+            weight = json.loads(msg.payload)["value"]
+            add_weight(sensor_id=sensor_id, weight=weight)
+            upper_threshold = get_upper_threshold(sensor_id)
+            average_weight = get_average_weight(sensor_id)
             if average_weight + upper_threshold > weight:
                 return
             email_adresses = get_email_adresses(sensor_id)
