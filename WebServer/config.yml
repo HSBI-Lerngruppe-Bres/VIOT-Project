@@ -6,7 +6,7 @@ mqtt:
   broker: localhost
   port: 1883
   client_id: web_server_client
-  topic: mailbox/#
+  topic: "mailbox/sensors"
   qos: 1
   keep_alive: 60
   clean_session: true
