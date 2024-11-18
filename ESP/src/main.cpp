@@ -53,11 +53,24 @@ void callback(char *topic, byte *message, unsigned int length)
   {
     disarmTime = millis(); // Setzt den Zeitpunkt des Deaktivierens auf die aktuelle Zeit
     alarmArmed = false;
-    digitalWrite(BUZZER_PIN, LOW)
+    digitalWrite(BUZZER_PIN, LOW);
   }
   else if (String(topic) == "mailbox/" + String(sensor_id) + "/arm_alarm")
   {
     alarmArmed = true; // Setzt die Alarmstatusvariable auf "scharfgestellt"
+
+    // Threshold aus der Nachricht extrahieren und ändern
+    int newThreshold = messageTemp.toInt(); // Konvertiert die Nachricht in einen Integer
+    if (newThreshold > 0)
+    {                           // Nur positive Werte akzeptieren
+      threshold = newThreshold; // Aktualisiert den Threshold-Wert
+      Serial.print("Neuer Threshold gesetzt: ");
+      Serial.println(threshold);
+    }
+    else
+    {
+      Serial.println("Ungültiger Threshold-Wert empfangen. Threshold bleibt unverändert.");
+    }
   }
 }
 
