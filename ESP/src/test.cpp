@@ -12,6 +12,7 @@ HX711 scale;
 int threshold = 200;          // Beispiel-Schwellenwert für das Gewicht in Gramm
 bool alarmArmed = false;      // Statusvariable: gibt an, ob der Alarm scharfgestellt ist
 unsigned long disarmTime = 0; // Zeitpunkt, an dem der Alarm zuletzt deaktiviert wurde (in Millisekunden seit Start)
+#define BUZZER_PIN 15         // GPIO for buzzer (D15)
 
 // Funktionsdeklarationen
 void setup_wifi();
@@ -51,6 +52,8 @@ void callback(char *topic, byte *message, unsigned int length)
     if (String(topic) == "mailbox/" + String(sensor_id) + "/disarm_alarm")
     {
         disarmTime = millis(); // Setzt den Zeitpunkt des Deaktivierens auf die aktuelle Zeit
+        alarmArmed = false;
+        digitalWrite(BUZZER_PIN, LOW)
     }
     else if (String(topic) == "mailbox/" + String(sensor_id) + "/arm_alarm")
     {
