@@ -2,66 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Mailbox Dashboard</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 80%;
-            margin-bottom: 30px;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        h2 {
-            margin-top: 30px;
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
     </style>
 </head>
 <body>
     <h1>Smart Mailbox Dashboard</h1>
 
     <h2>Gewichtsdaten</h2>
-    <table id="weights-table">
-        <tr>
-            <th>Sensor ID</th>
-            <th>Value</th>
-            <th>Timestamp</th>
-        </tr>
-        {% for weight in weights %}
-        <tr>
-            <td>{{ weight.sensor_id }}</td>
-            <td>{{ weight.value }}</td>
-            <td>{{ weight.timestamp }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<table>
+    <tr>
+        <th>Sensor ID</th>
+        <th>Value</th>
+        <th>Timestamp</th>
+    </tr>
+    {% for entry in weights %}
+    <tr>
+        <td>{{ entry.sensor_id }}</td>
+        <td>{{ entry.value }}</td>
+        <td>{{ entry.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
-    <h2>Alarme</h2>
-    <table id="alarms-table">
-        <tr>
-            <th>Sensor ID</th>
-            <th>Value</th>
-            <th>Timestamp</th>
-        </tr>
-        {% for alarm in alarms %}
-        <tr>
-            <td>{{ alarm.sensor_id }}</td>
-            <td>{{ alarm.value }}</td>
-            <td>{{ alarm.timestamp }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<h2>Alarme</h2>
+<table>
+    <tr>
+        <th>Sensor ID</th>
+        <th>Value</th>
+        <th>Timestamp</th>
+    </tr>
+    {% for alarm in alarms %}
+    <tr>
+        <td>{{ alarm.sensor_id }}</td>
+        <td>{{ alarm.value }}</td>
+        <td>{{ alarm.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+    <script>
+        const socket = io();
+
+        socket.on('new_weight', function(data) {
+            const table = document.getElementById('weights-table');
+            const row = table.insertRow();
+            row.innerHTML = `<td>${data.sensor_id}</td><td>${data.value}</td><td>${data.timestamp}</td>`;
+        });
+
+        socket.on('new_alarm', function(data) {
+            const table = document.getElementById('alarms-table');
+            const row = table.insertRow();
+            row.innerHTML = `<td>${data.sensor_id}</td><td>${data.value}</td><td>${data.timestamp}</td>`;
+        });
+    </script>
 </body>
 </html>
