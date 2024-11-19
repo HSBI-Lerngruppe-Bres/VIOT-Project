@@ -217,8 +217,8 @@ def on_connect(mqtt_client, userdata, flags, rc):
     """
     if rc == 0:
         logger.info("Connected successfully")
-        mqtt_client.subscribe("mailbox/+/weight")
-        mqtt_client.subscribe("mailbox/+/alarm")
+        mqtt_client.subscribe("mailbox/+/weight", qos=0)
+        mqtt_client.subscribe("mailbox/+/alarm", qos=0)
     else:
         logger.error(f"Connect failed with code {rc}")
 
@@ -251,11 +251,12 @@ def on_message(mqtt_client, userdata, msg):
 
     if event_type == "weight":
         try:
-            weight = json.loads(msg.payload)
+            weight = json.loads(msg.payload)['value']
             add_weight(sensor_id=sensor_id, weight=weight)
             upper_threshold = get_upper_threshold(sensor_id)
             average_weight = get_average_weight(sensor_id)
             if average_weight + upper_threshold > weight:
+                logger.info(f"Weight does not meet upper threshold")
                 return
             email_adresses = get_email_adresses(sensor_id)
             package_weight = weight - (average_weight)
@@ -293,11 +294,13 @@ def control_server_task():
     mqtt_client.on_connect = on_connect
     mqtt_client.on_disconnect = on_disconnect
     mqtt_client.on_message = on_message
+    mqtt_client.clean_session = True
     mqtt_client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
     mqtt_client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
     mqtt_client.user_data_set({
         'email_server': email_server
     })
+    mqtt_client.enable_logger(logger)
     
     try:
         mqtt_client.loop_forever()
@@ -305,6 +308,5 @@ def control_server_task():
         logger.info("Server stopped by user.")
     finally:
         logger.info("Resources cleaned up and server stopped.")
-
 if __name__ == "__main__":
     control_server_task()
