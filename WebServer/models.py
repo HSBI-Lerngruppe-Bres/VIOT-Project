@@ -35,6 +35,12 @@ class ThresholdSensitivity(db.Model):
     sensor_id = db.Column(db.Integer, primary_key=True)
     value = db.Column(db.Float)
 
+class EmailNotification(db.Model):
+    __tablename__ = 'email_notification'
+    __table_args__ = {'extend_existing': True} 
+    sensor_id = db.Column(db.Integer, primary_key=True)
+    email_address = db.Column(db.String, primary_key=True)
+
 def init_db(app):
     with app.app_context():
         db.init_app(app)

@@ -14,23 +14,31 @@
 <body>
     <h1>Smart Mailbox Dashboard</h1>
 
-    <h2>Gewichtsdaten</h2>
-<table>
-    <tr>
-        <th>Sensor ID</th>
-        <th>Value</th>
-        <th>Timestamp</th>
-    </tr>
-</table>
+    <h2>Email-Benachrichtigungen einrichten</h2>
+    <form id="emailForm">
+        <label for="email">E-Mail:</label>
+        <input type="email" id="email" name="email" required>
+        <button type="submit">Benachrichtigung aktivieren</button>
+    </form>
 
-<h2>Alarme</h2>
-<table>
-    <tr>
-        <th>Sensor ID</th>
-        <th>Value</th>
-        <th>Timestamp</th>
-    </tr>
-</table>
+    <h2>Gewichtsdaten</h2>
+    <table>
+        <tr>
+            <th>Sensor ID</th>
+            <th>Value</th>
+            <th>Timestamp</th>
+        </tr>
+    </table>
+
+    <h2>Alarme</h2>
+    <table>
+        <tr>
+            <th>Sensor ID</th>
+            <th>Value</th>
+            <th>Timestamp</th>
+        </tr>
+    </table>
+
 <script>
     $(document).ready(fetchData);
     function fetchData() {
@@ -68,6 +76,25 @@
 
     fetchData(); // Initial fetch
     setInterval(fetchData, 10000); // Fetch data every minute
+
+    $('#emailForm').on('submit', function(e) {
+    e.preventDefault(); // Verhindert, dass das Formular normal abgeschickt wird
+    const email = $('#email').val(); // Holt den E-Mail-Wert aus dem Formular
+
+    // Sende die Daten an den Server
+    $.ajax({
+        url: '/add_email',
+        type: 'POST',
+        data: { email: email },
+        success: function(response) {
+            alert(response.message); // Zeigt eine Erfolgsmeldung an
+        },
+        error: function(xhr, status, error) {
+            alert('Fehler beim Hinzufügen der E-Mail-Adresse.');
+            console.log('Fehlerdetails:', xhr.responseText);
+        }
+    });
+});
 </script>
 </body>
 </html>

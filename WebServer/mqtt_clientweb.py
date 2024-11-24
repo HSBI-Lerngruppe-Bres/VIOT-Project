@@ -1,10 +1,13 @@
 import sys
+import os
 import paho.mqtt.client as mqtt
 import logging
 from datetime import datetime
-from models import db, Weights, Alarms
-from app import app, send_weight_update, send_alarm_update
+from models import db, Weights, Alarms, EmailNotification
+from app import app
 from configweb import config
+from email_server import EmailServer
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,20 +35,41 @@ class MQTTClient:
         logger.info(f"Received message: {msg.payload.decode()} on topic: {msg.topic}")
         timestamp = datetime.utcnow()
 
+        
+
         with app.app_context():  # Stelle sicher, dass wir uns im Anwendungskontext befinden
             if msg.topic == "mailbox/sensors":
                 value = float(msg.payload.decode())
                 weight_entry = Weights(sensor_id=1, value=value, timestamp=timestamp)
                 db.session.add(weight_entry)
                 db.session.commit()
-                send_weight_update(1, value, timestamp)
+                #send_weight_update(1, value, timestamp)
 
             elif msg.topic == "mailbox/alarms":
                 alarm_message = msg.payload.decode()
                 alarm_entry = Alarms(sensor_id=1, value=alarm_message, timestamp=timestamp)
                 db.session.add(alarm_entry)
                 db.session.commit()
-                send_alarm_update(1, alarm_message, timestamp)
+                #send_alarm_update(1, alarm_message, timestamp)
+
+    def send_alarm_update(sensor_id, alarm_message, timestamp):
+        with app.app_context():
+            email_addresses = EmailNotification.query.filter_by(sensor_id=sensor_id).all()
+            if not email_addresses:
+                return
+
+            email_server = EmailServer(config.EMAIL_SMTP_SERVER, config.EMAIL_PORT, config.EMAIL_USERNAME, config.EMAIL_PASSWORD)
+            email_server.connect()
+
+            for entry in email_addresses:
+                email_server.send_email(
+                    entry.email_address,
+                    f"Alarm ausgelöst: {alarm_message}",
+                    f"Ein Alarm wurde ausgelöst:\n\nSensor ID: {sensor_id}\nAlarm: {alarm_message}\nZeit: {timestamp}"
+                )
+
+            email_server.disconnect()
+
 
     def run(self):
         self.client.loop_forever()
