@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from models import db, init_db, Weights, Alarms, EmailNotification
+from models import db, init_db, Weights, Alarms, EmailNotification, AlarmStatus
 from configweb import config
 
 app = Flask(__name__)
@@ -52,6 +52,26 @@ def add_email():
     except Exception as e:
         print(f"Interner Serverfehler: {e}")  # Debugging
         return jsonify({'message': f'Interner Serverfehler: {e}'}), 500
+    
+@app.route('/toggle_alarm', methods=['POST'])
+def toggle_alarm():
+    try:
+        is_active = request.form.get('is_active') == 'true'  # `true` aus der Anfrage konvertieren
+        with app.app_context():
+            # Alarmstatus aktualisieren (nur einen Eintrag verwenden)
+            alarm_status = AlarmStatus.query.first()
+            if not alarm_status:
+                alarm_status = AlarmStatus(is_active=is_active)
+                db.session.add(alarm_status)
+            else:
+                alarm_status.is_active = is_active
+            db.session.commit()
+
+        return jsonify({'message': f'Alarmstatus erfolgreich auf {"AN" if is_active else "AUS"} gesetzt.'})
+    except Exception as e:
+        print(f"Fehler beim Umschalten des Alarms: {e}")
+        return jsonify({'message': f'Fehler: {e}'}), 500
+
 
 
 if __name__ == '__main__':

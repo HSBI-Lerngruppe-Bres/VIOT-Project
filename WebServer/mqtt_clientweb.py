@@ -3,7 +3,7 @@ import os
 import paho.mqtt.client as mqtt
 import logging
 from datetime import datetime
-from models import db, Weights, Alarms, EmailNotification
+from models import db, Weights, Alarms, EmailNotification, AlarmStatus
 from app import app
 from configweb import config
 from email_server import EmailServer
@@ -23,6 +23,11 @@ class MQTTClient:
         self.client.on_message = self.on_message
         self.client.connect(self.broker, self.port, 60)
 
+    def is_alarm_active(self):
+        with app.app_context():
+            alarm_status = AlarmStatus.query.first()
+            return alarm_status.is_active if alarm_status else True  # Standardmäßig aktiv
+
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             logger.info("Connected successfully")
@@ -35,7 +40,17 @@ class MQTTClient:
         logger.info(f"Received message: {msg.payload.decode()} on topic: {msg.topic}")
         timestamp = datetime.utcnow()
 
-        
+        if msg.topic == "mailbox/alarms":
+        # Prüfe, ob der Alarm aktiv ist
+            if not self.is_alarm_active():
+                logger.info("Alarm ignoriert, da er deaktiviert ist.")
+                return
+
+            alarm_message = msg.payload.decode()
+            alarm_entry = Alarms(sensor_id=1, value=alarm_message, timestamp=timestamp)
+            db.session.add(alarm_entry)
+            db.session.commit()
+            #send_alarm_update(1, alarm_message, timestamp)
 
         with app.app_context():  # Stelle sicher, dass wir uns im Anwendungskontext befinden
             if msg.topic == "mailbox/sensors":

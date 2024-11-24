@@ -39,6 +39,10 @@
         </tr>
     </table>
 
+    <h2>Alarmsteuerung</h2>
+    <button id="toggleAlarm">Alarm ausschalten</button>
+    <p id="alarmStatus">Aktueller Status: AN</p>
+
 <script>
     $(document).ready(fetchData);
     function fetchData() {
@@ -95,6 +99,24 @@
         }
     });
 });
+
+let alarmStatus = true;  // Standardmäßig aktiv
+
+    // Funktion zum Umschalten des Alarms
+    $('#toggleAlarm').on('click', function() {
+        alarmStatus = !alarmStatus;  // Umschalten
+        const statusText = alarmStatus ? "AN" : "AUS";
+        $('#alarmStatus').text(`Aktueller Status: ${statusText}`);
+
+        // Anfrage an den Server senden, um den Alarmstatus zu aktualisieren
+        $.post('/toggle_alarm', { is_active: alarmStatus }, function(response) {
+            alert(response.message);
+        }).fail(function(error) {
+            alert('Fehler beim Umschalten des Alarms.');
+            console.log('Fehler:', error);
+        });
+    });
+    
 </script>
 </body>
 </html>
