@@ -17,7 +17,7 @@ def index():
 @app.route('/data')
 def data():
     weights = Weights.query.order_by(Weights.timestamp.desc()).all()
-    alarms = Alarms.query.order_by(Alarms.timestamp.desc()).all()
+    alarms = Alarms.query.order_by(Alarms.timestamp.desc()).limit(5).all()
 
     weights_data = [{'sensor_id': w.sensor_id, 'value': w.value, 'timestamp': w.timestamp} for w in weights]
     alarms_data = [{'sensor_id': a.sensor_id, 'value': a.value, 'timestamp': a.timestamp} for a in alarms]
