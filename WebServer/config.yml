@@ -1,0 +1,17 @@
+# Configuration file for WebServer
+flask:
+  secret_key: my_super_secret_key
+
+mqtt:
+  broker: localhost
+  port: 1883
+  client_id: web_server_client
+  topic: "mailbox/sensors"
+  qos: 1
+  keep_alive: 60
+  clean_session: true
+  username: your_username
+  password: your_password
+
+database:
+  name: "data.db"
