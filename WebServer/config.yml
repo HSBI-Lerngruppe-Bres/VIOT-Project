@@ -1,17 +1,29 @@
 # Configuration file for WebServer
 flask:
   secret_key: my_super_secret_key
+  debug: False
 
 mqtt:
-  broker: localhost
+  broker: mqtt
   port: 1883
-  client_id: web_server_client
-  topic: "mailbox/sensors"
-  qos: 1
-  keep_alive: 60
-  clean_session: true
+  client_id: web_server
   username: your_username
   password: your_password
 
 database:
-  name: "data.db"
+  host: timescaledb
+  port: 5432
+  name: smart_mailbox
+  user: your_username
+  password: your_password
+
+email:
+  smtp_server: smtp.example.com
+  port: 587
+  username: your_email_username
+  password: your_email_password
+  from_address: no-reply@example.com
+
+logging:
+  level: INFO
+  file: /var/log/controlserver.log

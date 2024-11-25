@@ -16,18 +16,10 @@ venv.bak/
 *.egg-info/
 .installed.cfg
 *.egg
-dist/
-build/
 *.whl
 
 # Poetry specific
 poetry.lock
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
 
 # Installer logs
 pip-log.txt
@@ -43,7 +35,6 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
 .hypothesis/
 .pytest_cache/
 cover/
@@ -67,8 +58,6 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/_static/
-docs/_templates/
 
 # PyBuilder
 target/
@@ -94,11 +83,6 @@ celerybeat-schedule
 .env.*
 .venv
 .venv.*
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -117,12 +101,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# config
+# Configuration files
 config.yml

@@ -23,6 +23,14 @@ services:
     env_file:
       - .env
 
+  webserver:
+    build: ./WebServer
+    container_name: webserver
+    ports:
+    - "5000:80"
+    env_file:
+      - .env
+
 volumes:
   timescaledb_data:
   mqtt_data:

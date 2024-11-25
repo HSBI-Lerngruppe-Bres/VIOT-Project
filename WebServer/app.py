@@ -1,11 +1,17 @@
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from models import db, init_db, Weights, Alarms, EmailNotification, AlarmStatus
-from configweb import config
+from configweb import Config
+from control_server import control_server_task
+import threading
+
+config = Config()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = config.SECRET_KEY
+app.config['DEBUG'] = config.DEBUG
 
 # Initialisiere die Datenbank
 init_db(app)
@@ -72,7 +78,16 @@ def toggle_alarm():
         print(f"Fehler beim Umschalten des Alarms: {e}")
         return jsonify({'message': f'Fehler: {e}'}), 500
 
+def control_server_task_context():
+    with app.app_context():
+        control_server_task()
+
+def main():
+    thread = threading.Thread(target=control_server_task_context)
+    thread.start()
+    
+    app.run(host='0.0.0.0', port=5000, debug=config.DEBUG)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    main()
