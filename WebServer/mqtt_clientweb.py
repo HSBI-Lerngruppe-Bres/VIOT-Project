@@ -69,23 +69,7 @@ class MQTTClient:
                 #send_weight_update(1, value, timestamp)
 
 
-    def send_alarm_update(sensor_id, alarm_message, timestamp):
-        with app.app_context():
-            email_addresses = EmailNotification.query.filter_by(sensor_id=sensor_id).all()
-            if not email_addresses:
-                return
-
-            email_server = EmailServer(config.EMAIL_SMTP_SERVER, config.EMAIL_PORT, config.EMAIL_USERNAME, config.EMAIL_PASSWORD)
-            email_server.connect()
-
-            for entry in email_addresses:
-                email_server.send_email(
-                    entry.email_address,
-                    f"Alarm ausgelöst: {alarm_message}",
-                    f"Ein Alarm wurde ausgelöst:\n\nSensor ID: {sensor_id}\nAlarm: {alarm_message}\nZeit: {timestamp}"
-                )
-
-            email_server.disconnect()
+    
 
 
     def run(self):
