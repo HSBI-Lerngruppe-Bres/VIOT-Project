@@ -4,3 +4,6 @@ docker-compose-win.yml
 __pycache__
 poetry.lock
 config.yml
+test.bat
+.env1
+test.ps1

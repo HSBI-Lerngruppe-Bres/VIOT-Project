@@ -35,6 +35,23 @@ class ThresholdSensitivity(db.Model):
     sensor_id = db.Column(db.Integer, primary_key=True)
     value = db.Column(db.Float)
 
+class ThresholdSensitivity(db.Model):
+    __tablename__ = 'threshold_sensetivety'
+    sensor_id = db.Column(db.Integer, primary_key=True)
+    value = db.Column(db.Float)
+
+class EmailNotification(db.Model):
+    __tablename__ = 'email_notification'
+    __table_args__ = {'extend_existing': True} 
+    sensor_id = db.Column(db.Integer, primary_key=True)
+    email_address = db.Column(db.String, primary_key=True)
+
+class AlarmStatus(db.Model):
+    __tablename__ = 'alarm_status'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+
 def init_db(app):
     """
     Initialize the database with the given Flask application context.
