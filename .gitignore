@@ -1,2 +1,6 @@
 # Ignore Mosquitto password files
 .env
+docker-compose-win.yml
+test.bat
+.env1
+test.ps1
