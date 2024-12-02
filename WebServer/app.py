@@ -3,9 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from models import db, init_db, Weights, Alarms, EmailNotification, AlarmStatus
 from configweb import Config
 from control_server import control_server_task
+import paho.mqtt.client as mqtt
 import threading
 
 config = Config()
+mqtt_client = mqtt.Client()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI
@@ -22,7 +24,7 @@ def index():
 
 @app.route('/data')
 def data():
-    weights = Weights.query.order_by(Weights.timestamp.desc()).all()
+    weights = Weights.query.order_by(Weights.timestamp.desc()).limit(10).all()
     alarms = Alarms.query.order_by(Alarms.timestamp.desc()).limit(5).all()
 
     weights_data = [{'sensor_id': w.sensor_id, 'value': w.value, 'timestamp': w.timestamp} for w in weights]
@@ -64,16 +66,8 @@ def toggle_alarm():
     try:
         is_active = request.form.get('is_active') == 'true'  # `true` aus der Anfrage konvertieren
         with app.app_context():
-            # Alarmstatus aktualisieren (nur einen Eintrag verwenden)
-            alarm_status = AlarmStatus.query.first()
-            if not alarm_status:
-                alarm_status = AlarmStatus(is_active=is_active)
-                db.session.add(alarm_status)
-            else:
-                alarm_status.is_active = is_active
-            db.session.commit()
-
-        return jsonify({'message': f'Alarmstatus erfolgreich auf {"AN" if is_active else "AUS"} gesetzt.'})
+            #send mqtt message to disarm alarm
+            mqtt_client.publish(f"mailbox/{1}/disarm_alarm", "disarm")
     except Exception as e:
         print(f"Fehler beim Umschalten des Alarms: {e}")
         return jsonify({'message': f'Fehler: {e}'}), 500
@@ -85,6 +79,9 @@ def control_server_task_context():
 def main():
     thread = threading.Thread(target=control_server_task_context)
     thread.start()
+    
+    mqtt_client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
+    mqtt_client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
     
     app.run(host='0.0.0.0', port=5000, debug=config.DEBUG)
 

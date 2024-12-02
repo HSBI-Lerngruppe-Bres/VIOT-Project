@@ -251,7 +251,7 @@ def on_message(mqtt_client, userdata, msg):
 
     if event_type == "weight":
         try:
-            weight = json.loads(msg.payload)['value']
+            weight = float(msg.payload)
             add_weight(sensor_id=sensor_id, weight=weight)
             upper_threshold = get_upper_threshold(sensor_id)
             average_weight = get_average_weight(sensor_id)
@@ -262,14 +262,14 @@ def on_message(mqtt_client, userdata, msg):
             package_weight = weight - (average_weight)
             send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
             lower_threshold = weight - get_threshold_sensitivity(sensor_id)
-            mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", json.dumps({"value": lower_threshold}))
+            mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", lower_threshold)
         except UniqueViolation as e:
             initialize_sensor(sensor_id)
             logger.error(f"Error processing weight event: {e} - Sensor initialized.")            
         except Exception as e:
             logger.error(f"Error processing weight event: {e}")
     elif event_type == "alarm":
-        weight = json.loads(msg.payload)["value"]
+        weight = float(msg.payload)
         add_alarm(sensor_id=sensor_id, weight=weight)
         email_adresses = get_email_adresses(sensor_id)
         send_emails(email_server, "ALARM", f"Alarm detected with value {weight}", email_adresses)

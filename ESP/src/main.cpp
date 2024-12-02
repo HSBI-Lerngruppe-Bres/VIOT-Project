@@ -84,10 +84,8 @@ void loop() {
   }
   client.loop();  // Hält die MQTT-Verbindung aufrecht und verarbeitet
                   // eingehende Nachrichten
-
   int weight =
       readWeightSensor();  // Ruft die aktuelle Gewichtsmessung vom Sensor ab
-
   // Gewicht senden
   client.publish(("mailbox/" + String(sensor_id) + "/weight").c_str(),
                  String(weight).c_str());
@@ -122,7 +120,9 @@ int readWeightSensor() {
 void reconnect() {
   while (!client.connected()) {  // Solange der Client nicht verbunden ist,
                                  // versucht er sich zu verbinden
+    Serial.println("Verbindung zum MQTT-Broker wird hergestellt...");
     if (client.connect("ESP32Client", mqtt_user, mqtt_password)) {
+      Serial.println("Verbunden mit MQTT-Broker");
       client.subscribe(
           ("mailbox/" + String(sensor_id) + "/disarm_alarm")
               .c_str());  // Abonniert das Topic zum Deaktivieren des Alarms
