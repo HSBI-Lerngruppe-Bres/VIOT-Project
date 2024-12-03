@@ -71,6 +71,7 @@ def toggle_alarm():
     except Exception as e:
         print(f"Fehler beim Umschalten des Alarms: {e}")
         return jsonify({'message': f'Fehler: {e}'}), 500
+    return "OK"
 
 def control_server_task_context():
     with app.app_context():
@@ -83,7 +84,7 @@ def main():
     mqtt_client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
     mqtt_client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
     
-    app.run(host='0.0.0.0', port=5000, debug=config.DEBUG)
+    app.run(host='0.0.0.0', port=5001, debug=config.DEBUG)
 
 
 if __name__ == '__main__':
