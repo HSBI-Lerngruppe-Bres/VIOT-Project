@@ -97,7 +97,7 @@
                         <h2 class="h5">Alarmsteuerung</h2>
                     </div>
                     <div class="card-body">
-                        <button id="toggleAlarm" class="btn btn-primary">Alarm ausschalten</button>
+                        <button id="disarmAlarm" class="btn btn-primary">Alarm ausschalten</button>
                         <p id="alarmStatus" class="mt-2">Aktueller Status: <span class="fw-bold">AN</span></p>
                     </div>
                 </div>
@@ -167,18 +167,45 @@
             });
         }
 
-        // Alarmsteuerung
-        $('#toggleAlarm').on('click', function () {
-            var currentStatus = $('#alarmStatus span').text() === "AN";
-            var newStatus = !currentStatus;
-            $('#alarmStatus span').text(newStatus ? "AN" : "AUS");
+        /// Alarmsteuerung
+        let countdownInterval;
+        let isAlarmActive = true;
 
-            $.post('/toggle_alarm', { is_active: newStatus }, function (response) {
-                alert(response.message);
-            }).fail(function (error) {
-                console.log('Error toggling alarm:', error);
-            });
+        $('#disarmAlarm').on('click', function () {
+            if (isAlarmActive) {
+                isAlarmActive = false;
+                $('#alarmStatus span').text('AUS');
+                startCountdown(5 * 60); // 5 minutes in seconds
+
+                // Re-enable the alarm after 5 minutes
+                setTimeout(function () {
+                    isAlarmActive = true;
+                    $('#alarmStatus span').text('AN');
+                    $('#disarmAlarm').prop('disabled', false).text('Alarm ausschalten');
+                }, 5 * 60 * 1000); // 5 minutes in milliseconds
+
+                $('#disarmAlarm').prop('disabled', true).text('Countdown läuft...');
+            }
         });
+
+        function startCountdown(seconds) {
+            clearInterval(countdownInterval); // Clear any existing countdown
+            let remainingTime = seconds;
+
+            countdownInterval = setInterval(function () {
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                } else {
+                    remainingTime--;
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    $('#disarmAlarm').text(
+                        `Countdown läuft... (${minutes}:${seconds.toString().padStart(2, '0')})`
+                    );
+                }
+            }, 1000); // Update every second
+        }
+
 
         // E-Mail-Hinterlegung
         $('#emailForm').on('submit', function (e) {
