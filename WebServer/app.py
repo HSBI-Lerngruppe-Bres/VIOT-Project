@@ -61,8 +61,8 @@ def add_email():
         print(f"Interner Serverfehler: {e}")  # Debugging
         return jsonify({'message': f'Interner Serverfehler: {e}'}), 500
     
-@app.route('/toggle_alarm', methods=['POST'])
-def toggle_alarm():
+@app.route('/disarm_alarm', methods=['POST'])
+def disarm_alarm():
     try:
         is_active = request.form.get('is_active') == 'true'  # `true` aus der Anfrage konvertieren
         with app.app_context():
