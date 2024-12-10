@@ -177,6 +177,11 @@
                 $('#alarmStatus span').text('AUS');
                 startCountdown(5 * 60); // 5 minutes in seconds
 
+                //send the request to the server
+                $.post('/disarm_alarm', function (response) {}).fail(function (error) {
+                    console.log('Error disarming alarm:', error);
+                });
+
                 // Re-enable the alarm after 5 minutes
                 setTimeout(function () {
                     isAlarmActive = true;
@@ -211,9 +216,7 @@
         $('#emailForm').on('submit', function (e) {
             e.preventDefault();
             const email = $('#email').val();
-            $.post('/add_email', { email: email }, function (response) {
-                alert(response.message);
-            }).fail(function (error) {
+            $.post('/add_email', { email: email }, function (response) {}).fail(function (error) {
                 console.log('Error adding email:', error);
             });
         });

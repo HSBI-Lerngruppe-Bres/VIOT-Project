@@ -7,7 +7,6 @@ import paho.mqtt.client as mqtt
 import threading
 
 config = Config()
-mqtt_client = mqtt.Client()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.DB_URI
@@ -67,7 +66,11 @@ def disarm_alarm():
         is_active = request.form.get('is_active') == 'true'  # `true` aus der Anfrage konvertieren
         with app.app_context():
             #send mqtt message to disarm alarm
+            mqtt_client = mqtt.Client()
+            mqtt_client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
+            mqtt_client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
             mqtt_client.publish(f"mailbox/{1}/disarm_alarm", "disarm")
+            mqtt_client.publish(f"mailbox/{1}/arm_alarm", -9999999)
     except Exception as e:
         print(f"Fehler beim Umschalten des Alarms: {e}")
         return jsonify({'message': f'Fehler: {e}'}), 500
@@ -81,8 +84,7 @@ def main():
     thread = threading.Thread(target=control_server_task_context)
     thread.start()
     
-    mqtt_client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
-    mqtt_client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
+   
     
     app.run(host='0.0.0.0', port=5001, debug=config.DEBUG)
 
