@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "controlserver"
+version = "0.1.0"
+description = ""
+authors = ["Nils Baxheinrich <nils@nbax.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+paho-mqtt = "^2.1.0"
+sqlalchemy = "^2.0.36"
+psycopg2-binary = "^2.9.10"
+pyyaml = "^6.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
