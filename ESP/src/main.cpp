@@ -28,6 +28,8 @@ int readWeightSensor();
 
 void setup() {
   Serial.begin(115200);                 // Startet die serielle Kommunikation
+  pinMode(BUZZER_PIN, OUTPUT);           // Setzt den Buzzer
+  digitalWrite(BUZZER_PIN, LOW);         // Deaktiviert den Buzzer
   setup_wifi();                         // Initialisiert die WLAN-Verbindung
   client.setServer(mqtt_server, 1883);  // Setzt den MQTT-Server und Port
   client.setCallback(callback);  // Setzt die Funktion, die bei eingehenden
