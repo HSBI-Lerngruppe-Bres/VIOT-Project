@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb
+    environment:
+      - POSTGRES_DB=smart_mailbox
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+    - "5432:5432"
+    volumes:
+    - timescaledb_data:/var/lib/postgresql/data
+
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt
+    ports:
+    - "1883:1883"
+    volumes:
+    - mqtt_data:/mosquitto/data
+    - mqtt_log:/mosquitto/log
+    - ./mosquitto/config:/mosquitto/config
+    environment:
+      - MOSQUITTO_USER=your_username
+      - MOSQUITTO_PASSWORD=your_password
+
+volumes:
+  timescaledb_data:
+  mqtt_data:
+  mqtt_log:

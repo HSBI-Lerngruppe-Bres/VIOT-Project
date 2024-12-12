@@ -1,0 +1,15 @@
+#pragma once
+
+// WiFi Configuration
+const char* wifi_ssid = "your_ssid";
+const char* wifi_password = "your_password";
+
+// MQTT Configuration
+const char* mqtt_server = "mqtt_adresss";
+const char* mqtt_user = "your_username";
+const char* mqtt_password = "your_password";
+
+const int sensor_id = 1;
+
+// Other Configuration
+const bool DEBUG = true;

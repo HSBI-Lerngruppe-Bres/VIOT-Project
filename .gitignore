@@ -1,6 +1,5 @@
 # Ignore Mosquitto password files
 .env
-docker-compose-win.yml
 __pycache__
 poetry.lock
 config.yml

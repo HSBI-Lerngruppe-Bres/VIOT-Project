@@ -33,6 +33,16 @@ def data():
 
 @app.route('/add_email', methods=['POST'])
 def add_email():
+    """
+    Fügt eine neue E-Mail-Adresse für Benachrichtigungen hinzu.
+
+    Diese Funktion empfängt eine E-Mail-Adresse über eine POST-Anfrage,
+    überprüft, ob die E-Mail-Adresse bereits existiert, und speichert sie
+    in der Datenbank, falls sie noch nicht vorhanden ist.
+
+    Returns:
+        Response: Eine JSON-Antwort mit einer Erfolgs- oder Fehlermeldung und dem entsprechenden HTTP-Statuscode.
+    """
     try:
         email = request.form.get('email')
         print(f"Erhaltene E-Mail: {email}")  # Debugging: Überprüfe die empfangene E-Mail
@@ -62,6 +72,15 @@ def add_email():
     
 @app.route('/disarm_alarm', methods=['POST'])
 def disarm_alarm():
+    """
+    Schaltet den Alarm aus.
+    
+    Diese Funktion empfängt eine POST-Anfrage, um den Alarm auszuschalten.
+    Sie sendet eine MQTT-Nachricht an den MQTT-Broker, um den Alarm auszuschalten.
+    
+    Returns:
+        str: Eine Antwort, die anzeigt, dass der Alarm ausgeschaltet wurde.
+    """
     try:
         is_active = request.form.get('is_active') == 'true'  # `true` aus der Anfrage konvertieren
         with app.app_context():
@@ -77,6 +96,9 @@ def disarm_alarm():
     return "OK"
 
 def control_server_task_context():
+    """
+    Startet die Funktion `control_server_task` im Anwendungsk
+    """
     with app.app_context():
         control_server_task()
 
