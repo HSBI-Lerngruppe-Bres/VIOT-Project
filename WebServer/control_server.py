@@ -1,5 +1,5 @@
 from configweb import Config
-from email_server import EmailServer
+from email_server import EmailSender
 import paho.mqtt.client as mqtt
 from models import db, Weights, UpperThreshold, ThresholdSensitivity, EmailNotification, Alarms
 from sqlalchemy import func
@@ -332,7 +332,7 @@ def control_server_task():
     
     logger.info("Configuration loaded successfully.")
     
-    email_server = EmailServer(
+    email_server = EmailSender(
         config.EMAIL_SMTP_SERVER, 
         config.EMAIL_PORT, 
         config.EMAIL_USERNAME, 
