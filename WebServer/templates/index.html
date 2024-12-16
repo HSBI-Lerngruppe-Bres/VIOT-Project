@@ -1,122 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Mailbox Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
+        /* Sicherstellen, dass der Footer immer unten bleibt */
+        html,
+        body {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        footer {
+            margin-top: auto;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        /* Navbar-Zentrierung */
+        .navbar-brand {
+            margin: auto;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
-    <h1>Smart Mailbox Dashboard</h1>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand text-center" href="#">Smart Mailbox Dashboard</a>
+        </div>
+    </nav>
 
-    <h2>Email-Benachrichtigungen einrichten</h2>
-    <form id="emailForm">
-        <label for="email">E-Mail:</label>
-        <input type="email" id="email" name="email" required>
-        <button type="submit">Benachrichtigung aktivieren</button>
-    </form>
+    <!-- Hauptinhalt -->
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Linke Spalte: Tabellen -->
+            <div class="col-md-8">
+                <!-- Gewichtsdaten -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5">Gewichtsdaten</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sensor ID</th>
+                                    <th>Value</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weightsTable">
+                                <!-- Dynamische Inhalte -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    <h2>Gewichtsdaten</h2>
-    <table>
-        <tr>
-            <th>Sensor ID</th>
-            <th>Value</th>
-            <th>Timestamp</th>
-        </tr>
-    </table>
+                <!-- Alarme -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5">Alarme</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sensor ID</th>
+                                    <th>Value</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alarmsTable">
+                                <!-- Dynamische Inhalte -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    <h2>Alarme</h2>
-    <table>
-        <tr>
-            <th>Sensor ID</th>
-            <th>Value</th>
-            <th>Timestamp</th>
-        </tr>
-    </table>
+            <!-- Rechte Spalte: Steuerung und E-Mail -->
+            <div class="col-md-4">
+                <!-- Alarmsteuerung -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="h5">Alarmsteuerung</h2>
+                    </div>
+                    <div class="card-body">
+                        <button id="disarmAlarm" class="btn btn-primary">Alarm ausschalten</button>
+                        <p id="alarmStatus" class="mt-2">Aktueller Status: <span class="fw-bold">AN</span></p>
+                    </div>
+                </div>
 
-    <h2>Alarmsteuerung</h2>
-    <button id="toggleAlarm">Alarm ausschalten</button>
-    <p id="alarmStatus">Aktueller Status: AN</p>
+                <!-- E-Mail-Benachrichtigungen -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h5">E-Mail-Benachrichtigungen</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="emailForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-Mail-Adresse</label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                    placeholder="E-Mail-Adresse eingeben" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Hinzufügen</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    $(document).ready(fetchData);
-    function fetchData() {
-        $.ajax({
-            url: '/data',
-            method: 'GET',
-            success: function(data) {
-                var weightsTable = $('table').first();
-                weightsTable.find("tr:gt(0)").remove(); // Clear existing rows except the header
-                data.weights.forEach(function(entry) {
-                    var row = '<tr>' +
-                        '<td>' + entry.sensor_id + '</td>' +
-                        '<td>' + entry.value + '</td>' +
-                        '<td>' + entry.timestamp + '</td>' +
-                        '</tr>';
-                    weightsTable.append(row);
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Smart Mailbox | <a href="/impressum">Impressum</a></p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(fetchData);
+
+        function fetchData() {
+            $.ajax({
+                url: '/data',
+                method: 'GET',
+                success: function (data) {
+                    // Gewichtsdaten aktualisieren
+                    var weightsTable = $('#weightsTable');
+                    weightsTable.empty();
+                    data.weights.forEach(function (entry) {
+                        var row = '<tr>' +
+                            '<td>' + entry.sensor_id + '</td>' +
+                            '<td>' + entry.value + '</td>' +
+                            '<td>' + entry.timestamp + '</td>' +
+                            '</tr>';
+                        weightsTable.append(row);
+                    });
+
+                    // Alarme aktualisieren
+                    var alarmsTable = $('#alarmsTable');
+                    alarmsTable.empty();
+                    data.alarms.forEach(function (alarm) {
+                        var row = '<tr>' +
+                            '<td>' + alarm.sensor_id + '</td>' +
+                            '<td>' + alarm.value + '</td>' +
+                            '<td>' + alarm.timestamp + '</td>' +
+                            '</tr>';
+                        alarmsTable.append(row);
+                    });
+                },
+                error: function (error) {
+                    console.log('Error fetching data:', error);
+                }
+            });
+        }
+
+        /// Alarmsteuerung
+        let countdownInterval;
+        let isAlarmActive = true;
+
+        $('#disarmAlarm').on('click', function () {
+            if (isAlarmActive) {
+                isAlarmActive = false;
+                $('#alarmStatus span').text('AUS');
+                startCountdown(5 * 60); // 5 minutes in seconds
+
+                //send the request to the server
+                $.post('/disarm_alarm', function (response) {}).fail(function (error) {
+                    console.log('Error disarming alarm:', error);
                 });
 
-                var alarmsTable = $('table').last();
-                alarmsTable.find("tr:gt(0)").remove(); // Clear existing rows except the header
-                data.alarms.forEach(function(alarm) {
-                    var row = '<tr>' +
-                        '<td>' + alarm.sensor_id + '</td>' +
-                        '<td>' + alarm.value + '</td>' +
-                        '<td>' + alarm.timestamp + '</td>' +
-                        '</tr>';
-                    alarmsTable.append(row);
-                });
-            },
-            error: function(error) {
-                console.log('Error fetching data:', error);
+                // Re-enable the alarm after 5 minutes
+                setTimeout(function () {
+                    isAlarmActive = true;
+                    $('#alarmStatus span').text('AN');
+                    $('#disarmAlarm').prop('disabled', false).text('Alarm ausschalten');
+                }, 5 * 60 * 1000); // 5 minutes in milliseconds
+
+                $('#disarmAlarm').prop('disabled', true).text('Countdown läuft...');
             }
         });
-    }
 
-    fetchData(); // Initial fetch
-    setInterval(fetchData, 10000); // Fetch data every minute
+        function startCountdown(seconds) {
+            clearInterval(countdownInterval); // Clear any existing countdown
+            let remainingTime = seconds;
 
-    $('#emailForm').on('submit', function(e) {
-    e.preventDefault(); // Verhindert, dass das Formular normal abgeschickt wird
-    const email = $('#email').val(); // Holt den E-Mail-Wert aus dem Formular
-
-    // Sende die Daten an den Server
-    $.ajax({
-        url: '/add_email',
-        type: 'POST',
-        data: { email: email },
-        success: function(response) {
-            alert(response.message); // Zeigt eine Erfolgsmeldung an
-        },
-        error: function(xhr, status, error) {
-            alert('Fehler beim Hinzufügen der E-Mail-Adresse.');
-            console.log('Fehlerdetails:', xhr.responseText);
+            countdownInterval = setInterval(function () {
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                } else {
+                    remainingTime--;
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    $('#disarmAlarm').text(
+                        `Countdown läuft... (${minutes}:${seconds.toString().padStart(2, '0')})`
+                    );
+                }
+            }, 1000); // Update every second
         }
-    });
-});
 
-let alarmStatus = true;  // Standardmäßig aktiv
 
-    // Funktion zum Umschalten des Alarms
-    $('#toggleAlarm').on('click', function() {
-        alarmStatus = !alarmStatus;  // Umschalten
-        const statusText = alarmStatus ? "AN" : "AUS";
-        $('#alarmStatus').text(`Aktueller Status: ${statusText}`);
-
-        // Anfrage an den Server senden, um den Alarmstatus zu aktualisieren
-        $.post('/toggle_alarm', { is_active: alarmStatus }, function(response) {
-            alert(response.message);
-        }).fail(function(error) {
-            alert('Fehler beim Umschalten des Alarms.');
-            console.log('Fehler:', error);
+        // E-Mail-Hinterlegung
+        $('#emailForm').on('submit', function (e) {
+            e.preventDefault();
+            const email = $('#email').val();
+            $.post('/add_email', { email: email }, function (response) {}).fail(function (error) {
+                console.log('Error adding email:', error);
+            });
         });
-    });
-    
-</script>
+
+        setInterval(fetchData, 10000); // Daten alle 10 Sekunden aktualisieren
+    </script>
 </body>
+
 </html>

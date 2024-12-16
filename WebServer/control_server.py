@@ -1,12 +1,11 @@
 from configweb import Config
-from email_server import EmailServer
+from email_server import EmailSender
 import paho.mqtt.client as mqtt
 from models import db, Weights, UpperThreshold, ThresholdSensitivity, EmailNotification, Alarms
 from sqlalchemy import func
 from psycopg2.errors import UniqueViolation
 from datetime import datetime, timedelta
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 mqtt_client = mqtt.Client()
@@ -190,8 +189,8 @@ def initialize_sensor(sensor_id):
     Closes the session after the operation is complete.
     """
     try:
-        new_upper_threshold = UpperThreshold(sensor_id=sensor_id, value=5)
-        new_threshold_sensitivity = ThresholdSensitivity(sensor_id=sensor_id, value=5)
+        new_upper_threshold = UpperThreshold(sensor_id=sensor_id, value=50)
+        new_threshold_sensitivity = ThresholdSensitivity(sensor_id=sensor_id, value=50)
         db.session.add(new_upper_threshold)
         db.session.add(new_threshold_sensitivity)
         db.session.commit()
@@ -233,6 +232,59 @@ def on_disconnect(mqtt_client, userdata, rc):
     """
     logger.info("Disconnected with result code " + str(rc))
 
+def handle_weight_event(mqtt_client, userdata, sensor_id, payload):
+    """
+    Handles the weight event.
+
+    Args:
+        mqtt_client (mqtt.Client): The client instance for this callback.
+        userdata (any): The private user data as set in Client() or userdata_set().
+        sensor_id (str): The ID of the sensor.
+        payload (str): The payload of the message.
+    """
+    email_server = userdata['email_server']
+    try:
+        weight = float(payload)
+        add_weight(sensor_id=sensor_id, weight=weight)
+        average_weight = get_average_weight(sensor_id)
+        threshold_sensitivity =  get_threshold_sensitivity(sensor_id)
+        upper_threshold = average_weight + threshold_sensitivity
+        if upper_threshold > weight:
+            logger.info(f"Weight does not meet upper threshold")
+            return
+        email_adresses = get_email_adresses(sensor_id)
+        package_weight = weight - average_weight
+        send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
+        lower_threshold = weight - threshold_sensitivity
+        mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", lower_threshold)
+    except UniqueViolation as e:
+        initialize_sensor(sensor_id)
+        logger.error(f"Error processing weight event: {e} - Sensor initialized.")
+    except ValueError as e:
+        initialize_sensor(sensor_id)
+        logger.error(f"Error processing weight event: {e} - Sensor initialized.")
+    except Exception as e:
+        logger.error(f"Error processing weight event: {e}")
+
+def handle_alarm_event(mqtt_client, userdata, sensor_id, payload):
+    """
+    Handles the alarm event.
+
+    Args:
+        mqtt_client (mqtt.Client): The client instance for this callback.
+        userdata (any): The private user data as set in Client() or userdata_set().
+        sensor_id (str): The ID of the sensor.
+        payload (str): The payload of the message.
+    """
+    email_server = userdata['email_server']
+    try:
+        weight = float(payload)
+        add_alarm(sensor_id=sensor_id, weight=weight)
+        email_adresses = get_email_adresses(sensor_id)
+        send_emails(email_server, "ALARM", f"Alarm detected with value {weight}", email_adresses)
+    except Exception as e:
+        logger.error(f"Error processing alarm event: {e}")
+
 def on_message(mqtt_client, userdata, msg):
     """
     Callback function for when a PUBLISH message is received from the server.
@@ -247,36 +299,32 @@ def on_message(mqtt_client, userdata, msg):
     splitted_topic = msg.topic.split('/')
     event_type = splitted_topic[2]
     sensor_id = splitted_topic[1]
-    email_server = userdata['email_server']    
 
     if event_type == "weight":
-        try:
-            weight = float(msg.payload)
-            add_weight(sensor_id=sensor_id, weight=weight)
-            upper_threshold = get_upper_threshold(sensor_id)
-            average_weight = get_average_weight(sensor_id)
-            if average_weight + upper_threshold > weight:
-                logger.info(f"Weight does not meet upper threshold")
-                return
-            email_adresses = get_email_adresses(sensor_id)
-            package_weight = weight - (average_weight)
-            send_emails(email_server, "NEW PACKAGE", f"New package detected with weight {package_weight}", email_adresses)
-            lower_threshold = weight - get_threshold_sensitivity(sensor_id)
-            mqtt_client.publish(f"mailbox/{sensor_id}/arm_alarm", lower_threshold)
-        except UniqueViolation as e:
-            initialize_sensor(sensor_id)
-            logger.error(f"Error processing weight event: {e} - Sensor initialized.")            
-        except Exception as e:
-            logger.error(f"Error processing weight event: {e}")
+        handle_weight_event(mqtt_client, userdata, sensor_id, msg.payload)
     elif event_type == "alarm":
-        weight = float(msg.payload)
-        add_alarm(sensor_id=sensor_id, weight=weight)
-        email_adresses = get_email_adresses(sensor_id)
-        send_emails(email_server, "ALARM", f"Alarm detected with value {weight}", email_adresses)
+        handle_alarm_event(mqtt_client, userdata, sensor_id, msg.payload)
     else:
         logger.warning(f"Unknown event type: {event_type}")
         
 def control_server_task():
+    """
+    Initializes and starts the control server task.
+    This function performs the following steps:
+    1. Loads the configuration settings.
+    2. Sets up logging based on the configuration.
+    3. Initializes the email server with the provided configuration.
+    4. Configures the MQTT client with connection, disconnection, and message handling callbacks.
+    5. Sets the MQTT client to clean session mode and configures authentication.
+    6. Connects the MQTT client to the broker.
+    7. Sets user data for the MQTT client.
+    8. Enables logging for the MQTT client.
+    9. Starts the MQTT client loop to process network traffic and dispatch callbacks.
+    The function also handles graceful shutdown on a keyboard interrupt, ensuring resources are cleaned up properly.
+    Raises:
+        KeyboardInterrupt: If the server is stopped by the user.
+    """
+    
     config = Config()
     
     logging.basicConfig(level=config.LOG_LEVEL.upper(),
@@ -284,7 +332,7 @@ def control_server_task():
     
     logger.info("Configuration loaded successfully.")
     
-    email_server = EmailServer(
+    email_server = EmailSender(
         config.EMAIL_SMTP_SERVER, 
         config.EMAIL_PORT, 
         config.EMAIL_USERNAME, 
@@ -308,5 +356,6 @@ def control_server_task():
         logger.info("Server stopped by user.")
     finally:
         logger.info("Resources cleaned up and server stopped.")
+        
 if __name__ == "__main__":
     control_server_task()

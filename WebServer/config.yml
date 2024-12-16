@@ -18,11 +18,11 @@ database:
   password: your_password
 
 email:
-  smtp_server: smtp.example.com
+  smtp_server: mail.gmx.net
   port: 587
-  username: your_email_username
-  password: your_email_password
-  from_address: no-reply@example.com
+  username: nils-baxheinrich@gmx.de
+  password: h4be8zDTGiwgNZ86U6
+  from_address: nils-baxheinrich@gmx.de
 
 logging:
   level: INFO

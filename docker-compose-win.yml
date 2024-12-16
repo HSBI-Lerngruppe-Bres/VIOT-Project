@@ -4,8 +4,10 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg14
     container_name: timescaledb
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_DB=smart_mailbox
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
     ports:
     - "5432:5432"
     volumes:
@@ -20,16 +22,9 @@ services:
     - mqtt_data:/mosquitto/data
     - mqtt_log:/mosquitto/log
     - ./mosquitto/config:/mosquitto/config
-    env_file:
-      - .env
-
-  webserver:
-    build: ./WebServer
-    container_name: webserver
-    ports:
-    - "5000:5000"
-    env_file:
-      - .env
+    environment:
+      - MOSQUITTO_USER=your_username
+      - MOSQUITTO_PASSWORD=your_password
 
 volumes:
   timescaledb_data:
